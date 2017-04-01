@@ -28,7 +28,7 @@ Z0 = 50;
 f = 300;
 
 % Attenation constant
-alpha = 0;
+alpha = 0.0;
 
 % Load Impedance [ohm]
 ZL = 12.5;
@@ -95,7 +95,7 @@ title(['Standing wave amplitude' sprintf('\n') 'ZL = ' num2str(ZL) ...
        '\Omega | \alpha = ' num2str(alpha) ' Np/m'])
 xlabel('x/\lambda [m]');
 ylabel('Amplitude');
-legend('Voltage standing wave [V]', 'Current standing wave [A*50]')
+legend('Voltage standing wave [V]', 'Current standing wave [A\times50]')
 xlim([0 l])
 grid on
 
@@ -107,13 +107,13 @@ else
 end;
 
 %% 5-6. Wave propagation animation
-
 % Animation parameters
+
 % Number of periods to simulate
-numT = 5;
+numT = 3;
 
 % Number of points per period
-pointsPerT = 32;
+pointsPerT = 64;
 
 % Total number of simulation points
 numSimPoints = numT * pointsPerT;
@@ -140,7 +140,7 @@ grid on
 hV = plot(x/lambda, real(V), 'LineWidth', 2);
 hI = plot(x/lambda, real(I), 'LineWidth', 2); 
 legend([hVS hIS hV hI], 'Standing voltage wave amplitude [V]', ...
-                        'Standing current wave amplitude [A*50]', ...
+                        'Standing current wave amplitude [A\times50]', ...
                         'Voltage Wave [V]', '50 \times Current Wave [A]')
 
 % Animation
@@ -179,6 +179,96 @@ title(['Reflection coefficient along the line' sprintf('\n') ...
 xlabel('Re(\rho)')
 ylabel('Im(\rho)')
 
+%% 1. Line Impedance
+Zin = V ./ I;
+
+figure(4)
+plot(x/lambda, real(Zin), x/lambda, imag(Zin))
+xlim([0 l])
+title(['Input Impedance along the line' sprintf('\n') ...
+      'ZL = ' num2str(ZL) '\Omega | \alpha = ' num2str(alpha) ' Np/m'])
+xlabel('x/\lambda')
+ylabel('Impedance (\Omega)')
+legend('Resistance', 'Reactance')
+grid on
+
+%% 2. Match the Line Impedance
+% To match the line using a serial reactance, the reflection coeficient
+% must be zero. The distances x/\lambda adequated to match the line by
+% using a serial reactance must have a resistance matching Z0, the
+% caracterisitic impedance
+
+% Input resistance equals characteristic resistance. Round Zin to units to
+% accuracy in results
+
+% Postive reactance implies a inductive reactance (inductor)
+Lidx = find(round(real(Zin), 0) == real(Z0) & imag(Zin) > 0);
+
+% Negative reactance implies a capacitive reactance (capacitor)
+Cidx = find(round(real(Zin), 0) == real(Z0) & imag(Zin) < 0);
 
 
+figure(5)
+plot(x/lambda, real(Zin), x/lambda, imag(Zin))
+hold on
+plot(x(Lidx)/lambda, zeros(1, length(Lidx)), 'kx')
+plot(x(Cidx)/lambda,  zeros(1, length(Cidx)), 'c*')
+hold off
+xlim([0 l])
+title(['Impedance matching using a serial reactance' sprintf('\n') ...
+      'ZL = ' num2str(ZL) '\Omega | \alpha = ' num2str(alpha) ' Np/m'])
+xlabel('x/\lambda')
+ylabel('Impedance (\Omega)')
+legend('Resistance', 'Reactance', 'inductive reactance - Inductor', ...
+       'Capacitive reactance -  Capacitor')
+grid on
+
+
+
+%% 3. Line Admittance
+Yin = 1./Zin;
+
+figure(6)
+plot(x/lambda, real(Yin), x/lambda, imag(Yin))
+xlim([0 l])
+title(['Input Admittance along the line' sprintf('\n') ...
+      'ZL = ' num2str(ZL) '\Omega | \alpha = ' num2str(alpha) ' Np/m'])
+xlabel('x/\lambda')
+ylabel('Admittance (S)')
+legend('Conductance', 'Susceptance')
+grid on
+
+%% 4. Match the Line Admittance
+% To match the line using a parallel susceptance, the reflection coeficient
+% must be zero. The distances x/\lambda adequated to match the line by
+% using a parallel susceptance must have a conductance matching Y0, the
+% caracterisitic admittance
+
+% Characteristic Admittance
+Y0 = 1/Z0;
+
+% Input admittance equals characteristic admittance. Round Yin to units to
+% accuracy in results
+
+% Positive susceptance implies a capacitive susceptance (capacitor)
+Cidx = find(round(real(Yin), 3) == real(Y0) & imag(Yin) > 0);
+
+% Negative susceptance implies a inductive susceptance (inductor)
+Lidx = find(round(real(Yin), 3) == real(Y0) & imag(Yin) < 0);
+
+
+figure(7)
+plot(x/lambda, real(Yin), x/lambda, imag(Yin))
+hold on
+plot(x(Lidx)/lambda, zeros(1, length(Lidx)), 'kx')
+plot(x(Cidx)/lambda,  zeros(1, length(Cidx)), 'c*')
+hold off
+xlim([0 l])
+title(['Admittance matching using a parallel susceptance' sprintf('\n') ...
+      'ZL = ' num2str(ZL) '\Omega | \alpha = ' num2str(alpha) ' Np/m'])
+xlabel('x/\lambda')
+ylabel('Admittance (S)');
+legend('Conductance', 'Susceptance', 'inductive reactance - Inductor', ...
+       'Capacitive reactance -  Capacitor')
+grid on
 
